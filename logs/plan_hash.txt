@@ -1,2 +1,4 @@
 880dd0ce3abd96b4ceda24251c36c5f09bdfacea8f9021e9e18da7ec6cfdbf49  design/analysis_plan.md
 2026-11-24T21:40:08Z
+d7857d52c0cb64789e0836718fd1a941190ec8898951d34290688e36098e1c16  design/analysis_plan_step4.md
+2026-11-24T23:50:26Z

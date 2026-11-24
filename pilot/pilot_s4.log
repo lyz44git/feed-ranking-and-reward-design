@@ -1,0 +1,33 @@
+  seed 0 epoch 0 val loss 0.27010
+  seed 0 epoch 1 train 0.30633 val 0.27516 (14s)
+  seed 0 epoch 2 train 0.29977 val 0.27371 (14s)
+  seed 0 epoch 3 train 0.29305 val 0.27097 (14s)
+top4_lr1e-5 {'auc': 0.6113606701672383, 'best_val_loss': 0.2700981920615759}
+  seed 0 epoch 0 val loss 0.27010
+  seed 0 epoch 1 train 0.30332 val 0.27719 (70s)
+  seed 0 epoch 2 train 0.29654 val 0.27708 (70s)
+  seed 0 epoch 3 train 0.29271 val 0.27620 (70s)
+full_lr5e-6 {'auc': 0.6113606701672383, 'best_val_loss': 0.2700981920615759}
+  seed 0 epoch 0 val loss 0.27010
+  seed 0 epoch 1 train 0.30207 val 0.27923 (23s)
+  seed 0 epoch 2 train 0.29123 val 0.27350 (23s)
+  seed 0 epoch 3 train 0.28868 val 0.27770 (23s)
+top8_lr3e-5 {'auc': 0.6113606701672383, 'best_val_loss': 0.2700981920615759}
+{
+ "metadata": 0.6113606701672383,
+ "reference_rate_from_other_viewers": 0.694661122408717,
+ "finetune_top4_lr1e-5": {
+  "auc": 0.6113606701672383,
+  "best_val_loss": 0.2700981920615759
+ },
+ "finetune_full_lr5e-6": {
+  "auc": 0.6113606701672383,
+  "best_val_loss": 0.2700981920615759
+ },
+ "finetune_top8_lr3e-5": {
+  "auc": 0.6113606701672383,
+  "best_val_loss": 0.2700981920615759
+ },
+ "judge_rating": 0.5167845327343916,
+ "judge_yes_no": 0.49490090144777976
+}

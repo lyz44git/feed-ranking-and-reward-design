@@ -63,3 +63,29 @@ def test_item_rate_shrinks_toward_the_mean():
     D = SimpleNamespace(video_codes=np.arange(2), vid=np.array([1, 1, 2]))
     r = kd.item_rate(D, np.arange(3), np.array([1.0, 1.0, 0.0]), prior=20)
     assert 2 / 3 < r[1] < 1 and 0 < r[2] < 2 / 3 and abs(r[0] - 2 / 3) < 1e-6
+
+
+# --- step 4 -----------------------------------------------------------------------------------------------------
+
+from kr import text as kt  # noqa: E402
+
+
+def test_pilot_and_final_videos_do_not_overlap_and_video_split_keeps_shares():
+    assert kt.video_filter("pilot") == "video_id % 5 = 0" and kt.video_filter("final") == "video_id % 5 <> 0"
+    parts = np.array(list(kt.split_videos(np.arange(1000)).values()))
+    assert (parts == "train").sum() == 500 and (parts == "val").sum() == 100 and (parts == "test").sum() == 400
+
+
+def test_weighted_within_user_auc_equals_the_unweighted_one_on_repeated_rows():
+    rng = np.random.default_rng(0); n = 3000
+    user = np.sort(rng.integers(0, 100, n)); y = rng.integers(0, 2, n).astype(float)
+    s = np.round(rng.normal(size=n) + y, 1)                      # rounded, so there are ties
+    assert abs(kt.weighted_within_user_auc(user, y, s, np.ones(n)) - ke.within_user_auc(user, y, s)) < 1e-12
+    w = rng.integers(0, 3, n); rep = np.repeat(np.arange(n), w)
+    assert abs(kt.weighted_within_user_auc(user, y, s, w.astype(float))
+               - ke.within_user_auc(user[rep], y[rep], s[rep])) < 1e-12
+
+
+def test_captions_lose_account_mentions_but_keep_hashtags():
+    assert kt.clean_caption("岳父 #搞笑  @快手热点(O40300129) 真实") == "岳父 #搞笑 真实"
+    assert kt.clean_caption(None) == ""

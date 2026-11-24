@@ -1,0 +1,18 @@
+{
+ "metadata": 0.6113606701672383,
+ "reference_rate_from_other_viewers": 0.694661122408717,
+ "finetune_top4_lr1e-5": {
+  "auc": 0.6113606701672383,
+  "best_val_loss": 0.2700981920615759
+ },
+ "finetune_full_lr5e-6": {
+  "auc": 0.6113606701672383,
+  "best_val_loss": 0.2700981920615759
+ },
+ "finetune_top8_lr3e-5": {
+  "auc": 0.6113606701672383,
+  "best_val_loss": 0.2700981920615759
+ },
+ "judge_rating": 0.5167845327343916,
+ "judge_yes_no": 0.49490090144777976
+}
