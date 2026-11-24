@@ -1,0 +1,27 @@
+events 530002 users 5457 1s
+targets train 113148 test 122229 | history length at target: median 90 p10 24 p90 259
+lgb_no_history: AUC 0.6274
+lgb_history_aggregates: AUC 0.6849
+net_no_history seed 0 epoch 1: train loss 0.3098 test AUC 0.5668 (724s)
+net_no_history seed 0 epoch 2: train loss 0.2889 test AUC 0.5904 (725s)
+net_no_history seed 0 epoch 3: train loss 0.2848 test AUC 0.5999 (726s)
+transformer seed 0 epoch 1: train loss 0.2911 test AUC 0.7184 (732s)
+transformer seed 0 epoch 2: train loss 0.2679 test AUC 0.7285 (737s)
+transformer seed 0 epoch 3: train loss 0.2595 test AUC 0.7292 (742s)
+transformer seed 0 epoch 4: train loss 0.2440 test AUC 0.7224 (746s)
+transformer seed 1 epoch 1: train loss 0.2897 test AUC 0.7142 (751s)
+transformer seed 1 epoch 2: train loss 0.2697 test AUC 0.7252 (756s)
+transformer seed 1 epoch 3: train loss 0.2596 test AUC 0.7196 (760s)
+transformer seed 1 epoch 4: train loss 0.2437 test AUC 0.7190 (765s)
+== final long_view
+lgb_no_history 0.6274
+lgb_history_aggregates 0.6849
+net_no_history 0.5999
+transformer 0.7328
+transformer - lgb_history_aggregates [0.0411 0.0475 0.0538]
+transformer - lgb_no_history [0.0953 0.1046 0.1149]
+lgb_history_aggregates - lgb_no_history [0.0527 0.0573 0.063 ]
+lgb_no_history top 10%: long_view 0.1799 play_s 11.2
+lgb_history_aggregates top 10%: long_view 0.2352 play_s 14.59
+net_no_history top 10%: long_view 0.144 play_s 8.8
+transformer top 10%: long_view 0.2518 play_s 15.9
