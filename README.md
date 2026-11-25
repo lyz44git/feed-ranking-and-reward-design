@@ -92,9 +92,9 @@ the two on its usual offline metric would ship the worse ranker.
 
 <sub><b>Methods.</b> The network of section 1, trained once on 470,538 random and once on 419,032 standard-feed exposures of the same train users. Policy value: for each test user, the top 10% of the user's random exposures by score (at least one), and the mean outcome over them. Standard-feed exposures are long-viewed four times as often as random ones (33.7% and 31.3% against 8.5%), which is the selection the feed makes.</sub>
 
-<a href="https://lyz44git.github.io/feed-ranking-and-reward-design/#logs"><img src="figures/figure2_final.png" alt="Three panels: long-view rate of the videos shown against the share of each user's ranked list shown, by training logs; the two rankers' order on the offline check and on long views; predicted against observed long-view rate." width="100%"></a>
+<a href="https://lyz44git.github.io/feed-ranking-and-reward-design/#logs"><img src="figures/figure2_final.png" alt="Two panels: long-view rate of the videos shown against the share of each user's ranked list shown, for several models and for the network trained on the standard feed; predicted against observed long-view rate by tenth of prediction for the two training logs." width="100%"></a>
 
-**Figure 2. The training logs, at every list length.** *Notes:* A, long-view rate of the videos each user would be shown when the ranker shows the top 1% to 100% of the user's random exposures; the band spans the five models of section 1, all trained on random exposures. B, the two rankers' order on the usual offline check (AUC on held-out standard-feed exposures) and on the long-view rate of each user's top 10%. C, mean predicted against observed long-view rate in tenths of each ranker's prediction on random exposures; the dashed line is perfect calibration.
+**Figure 2. The training logs, at every list length.** *Notes:* A, long-view rate of the videos each user would be shown when the ranker shows the top 1% to 100% of the user's random exposures; the shaded gap is the difference the training logs make, the lines inside it the difference the model makes. B, mean predicted against observed long-view rate in tenths of each ranker's prediction on random exposures; the dashed line is perfect calibration.
 
 ## 3. Rewarded for the share of a video watched, the ranker picks 9-second videos.
 
@@ -111,9 +111,9 @@ are rare (about 6 and 1 per 1,000 exposures) and move little under any reward.
 
 <sub><b>Methods.</b> The network of section 1 trained on random exposures with three labels: the share of the video watched (watch time over length, capped at one), long view, and the log of seconds watched. Each policy shows each user the top 10% of the user's random exposures by its score; "shown at random" shows the same number drawn at random.</sub>
 
-<a href="https://lyz44git.github.io/feed-ranking-and-reward-design/#reward"><img src="figures/figure3_final.png" alt="Three panels: length of the videos in each user's top 10% under three rewards and at random; change in share watched, long views and seconds watched relative to random; seconds watched against long-view rate as the list grows." width="100%"></a>
+<a href="https://lyz44git.github.io/feed-ranking-and-reward-design/#reward"><img src="figures/figure3_final.png" alt="Two panels: distribution of video length in each user's top 10% under three rewards and at random; seconds watched against long-view rate for each reward as the list grows from 1% to 100%." width="100%"></a>
 
-**Figure 3. What each reward puts at the top of the list.** *Notes:* A, lengths of the videos in each user's top 10% under each reward and at random, on a log scale; each row is scaled to its own peak. B, change in three outcomes of each user's top 10% relative to videos shown at random, for the share-watched and the seconds-watched rewards. C, seconds watched and long-view rate as the list grows from the top 1% to all of a user's random exposures; large dots mark the top 10%.
+**Figure 3. What each reward puts at the top of the list.** *Notes:* A, share of the videos in each user's top 10% by length, for the three rewards; the dotted line is videos shown at random. B, seconds watched and long-view rate of the videos shown as the list grows from the top 1% to all of a user's random exposures; large dots mark the top 10%.
 
 ## 4. For a new video, a language model's judgment of its caption is close to chance.
 
@@ -152,7 +152,7 @@ every setting tried.
 
 <a href="https://lyz44git.github.io/feed-ranking-and-reward-design/#cold"><img src="figures/figure4_final.png" alt="Three panels: observed long-view rate of each test video against its score percentile under the metadata model and under the language-model judge; long-view rate by tenth of four scores." width="100%"></a>
 
-**Figure 4. New videos, sorted by each score.** *Notes:* A and B, each dot is one of the 2,413 test videos, placed by its score percentile and its observed long-view rate (square-root scale), sized by its number of random exposures; the line joins the exposure-weighted rate of each tenth. C, the same rate by tenth for four scores (thin lines: the caption embedding and the rating prompt); the dashed line is the rate of all test videos.
+**Figure 4. New videos, sorted by each score.** *Notes:* A and B, each dot is one of the 2,413 test videos, placed by its score percentile and its observed long-view rate (square-root scale), sized by its number of random exposures; the line joins the exposure-weighted rate of each tenth. C, the same rate by tenth for four scores; the dashed line is the overall rate.
 
 ## 5. Published research reports the same pattern.
 
@@ -221,7 +221,7 @@ pilot/       the exploratory scripts and logs that chose the settings and thresh
 src/kr/      data preparation, the network, unbiased evaluation, the caption models' data and evaluation
 steps/       one script per stage, in run order; results in out/<sample>/
 out/         results.json (sections 1 to 3), step4.json (section 4) and explorer.json (curves behind Figures 2 to 4)
-figures/     Figures 1 to 4, drawn from the result files (steps/s_figures.py, steps/s_figures_more.py)
+figures/     Figures 1 to 4, drawn from the result files
 docs/        interactive figures (GitHub Pages); build_data.py reads every number from the result files
 logs/        run logs and the SHA-256 of the plans
 tests/       unit tests (no data needed)
