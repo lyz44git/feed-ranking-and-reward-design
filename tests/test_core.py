@@ -89,3 +89,18 @@ def test_weighted_within_user_auc_equals_the_unweighted_one_on_repeated_rows():
 def test_captions_lose_account_mentions_but_keep_hashtags():
     assert kt.clean_caption("岳父 #搞笑  @快手热点(O40300129) 真实") == "岳父 #搞笑 真实"
     assert kt.clean_caption(None) == ""
+
+
+def test_explorer_top_mask_matches_policy_value():
+    """The list-length curves (steps/s5_explorer_data.py) select the same rows as evaluate.top_parts."""
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("s5", Path(__file__).resolve().parents[1] / "steps" / "s5_explorer_data.py")
+    s5 = importlib.util.module_from_spec(spec); spec.loader.exec_module(s5)
+    rng = np.random.default_rng(3)
+    user = np.repeat(np.arange(40), rng.integers(1, 30, 40)); n = len(user)
+    score = np.round(rng.random(n), 1)                     # ties, broken by row order in both
+    y = rng.random(n)
+    for share in (0.01, 0.1, 0.35, 1.0):
+        m = s5.top_mask(user, score, share)
+        (val, _) = ke.policy_value(user, score, {"y": y}, share)
+        assert np.isclose(y[m].mean(), val["y"])

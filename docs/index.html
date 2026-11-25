@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Feed Ranking Explorer</title>
+<meta name="description" content="Interactive figures for a study of what a short-video feed ranker learns from, how it is scored and what it is rewarded for.">
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body data-page="index">
+<div class="top"><div class="wrap">
+  <a class="brand" href="index.html" style="color:inherit;text-decoration:none">Feed ranking</a>
+  <nav id="nav"><a href="#logs" data-page="logs">1 · Training logs</a><a href="#check" data-page="check">2 · Offline check</a><a href="#reward" data-page="reward">3 · Reward</a><a href="#cold" data-page="cold">4 · New videos</a></nav>
+  <button class="btn ghost toggle-theme" id="theme" type="button" aria-label="Switch light or dark theme">◐</button>
+</div></div>
+<header class="hero"><div class="wrap">
+  <div class="kicker">Interactive figures · public data</div>
+  <h1 class="serif">What a feed ranker learns from matters more than the model.</h1>
+  <p class="dek">A short-video app replaced some recommendations with videos drawn at random and released the logs. Users' responses to those videos show what a ranker would obtain, with no model of how the feed chooses. Change how long a list the ranker shows, which offline score picks the model, and what it is rewarded for, and the charts follow.</p>
+  <div class="stats">
+    <div class="stat"><div class="n" data-count="exposures">0</div><div class="l">random exposures of held-out users, the ground truth for every chart</div></div>
+    <div class="stat"><div class="n" data-count="users">0</div><div class="l">held-out users, none of whom any model was trained on</div></div>
+    <div class="stat"><div class="n"><span class="o" data-count="lvStd" data-suffix="%">0</span><span class="vs">→</span><span data-count="lvRand" data-suffix="%">0</span></div><div class="l">long-view rate of each user's top 10%, trained on the standard feed and on random exposures</div></div>
+  </div>
+</div></header>
+
+<section class="part" id="logs"><div class="wrap">
+  <div class="kicker">1 · Which logs to learn from</div>
+  <h2 class="serif">Trained on random exposures, the ranker's picks are long-viewed far more often, at any list length.</h2>
+  <p class="lead">Each user's random exposures are ranked by a model, and the top of the list is what a feed would show. The gap between training logs dwarfs the gap between models.</p>
+  <div class="card">
+    <h3>Outcome of the videos each user would be shown, by how much of the list is shown</h3>
+    <p class="sub">Move the slider to show more or less of each user's ranked list. At 100% every exposure is shown, which is the same as showing videos at random.</p>
+    <div class="ctrl"><span class="lab">Compare</span><div class="seg" id="seg-curve-set"><button type="button" data-v="logs">Training logs</button><button type="button" data-v="models">Models</button></div>
+      <span class="lab" style="margin-left:10px">Outcome</span><div class="seg" id="seg-curve-out"><button type="button" data-v="long_view">Long-view rate</button><button type="button" data-v="watch_seconds">Seconds watched</button></div></div>
+    <div class="slider"><span class="lab">Share of each user's list shown</span><input type="range" id="rg-share" min="0" max="11" step="1" value="3"><output id="out-share"></output></div>
+    <div id="c-curve"></div>
+    <div class="legend" id="lg-curve"></div>
+    <p class="note">Lines join the outcome at 1%, 2%, 5%, 10%, 15%, 20%, 30%, 40%, 50%, 60%, 75% and 100% of each user's main-feed random exposures, ranked by each model's score; the horizontal axis is on a log scale. The dashed line is the outcome of videos shown at random. A long view is a play of at least 18 seconds, or of the whole video if it is shorter.</p>
+    <p class="src">Sections <a href="https://github.com/lyz44git/feed-ranking-and-reward-design#1-which-model-is-used-changes-the-outcome-by-about-one-point">1</a> and <a href="https://github.com/lyz44git/feed-ranking-and-reward-design#2-trained-on-the-standard-feed-the-ranker-looks-better-offline-and-recommends-worse">2</a> of the repository.</p>
+  </div>
+</div></section>
+
+<section class="part" id="check"><div class="wrap">
+  <div class="kicker">2 · How the ranker is scored</div>
+  <h2 class="serif">The usual offline check picks the ranker that recommends worse.</h2>
+  <p class="lead">The model trained on the standard feed wins on held-out standard-feed exposures. Scored on exposures the feed did not choose, the order reverses.</p>
+  <div class="card">
+    <h3>Which ranker wins depends on what it is scored on</h3>
+    <p class="sub">Choose a score. The badge marks the ranker a team would ship on that score.</p>
+    <div class="ctrl"><div class="seg" id="seg-flip"><button type="button" data-v="auc_standard">AUC on the standard feed</button><button type="button" data-v="within_random">Within-user AUC on random exposures</button><button type="button" data-v="long_view">Long-view rate, top 10%</button><button type="button" data-v="watch_seconds">Seconds watched, top 10%</button></div></div>
+    <div id="c-flip"></div>
+    <p class="note">Both rankers are the same network; only the training logs differ. Within-user AUC is the share of pairs of the same user's exposures, one long-viewed and one not, that a score orders correctly.</p>
+  </div>
+  <div class="card">
+    <h3>Predicted against observed long-view rate on random exposures</h3>
+    <p class="sub">Exposures in tenths of each ranker's prediction. Points on the diagonal are calibrated. The standard-feed model expects the long views its own feed produced.</p>
+    <div class="ctrl"><div class="seg" id="seg-calib"><button type="button" data-v="both">Both</button><button type="button" data-v="transformer">Trained on random exposures</button><button type="button" data-v="trained_on_standard_feed">Trained on the standard feed</button></div></div>
+    <div id="c-calib"></div>
+    <div class="readout" id="ro-calib"></div>
+    <p class="src">Section <a href="https://github.com/lyz44git/feed-ranking-and-reward-design#2-trained-on-the-standard-feed-the-ranker-looks-better-offline-and-recommends-worse">2</a> of the repository.</p>
+  </div>
+</div></section>
+
+<section class="part" id="reward"><div class="wrap">
+  <div class="kicker">3 · What it is rewarded for</div>
+  <h2 class="serif">Rewarded for the share of a video watched, the ranker picks 9-second videos.</h2>
+  <p class="lead">The same network trained on three labels. A reward that can be met by picking short videos is met that way.</p>
+  <div class="card">
+    <h3>Length of the videos each reward puts in a user's top 10%</h3>
+    <p class="sub">Choose a reward. The outline shows the lengths of videos shown at random.</p>
+    <div class="ctrl"><div class="seg" id="seg-reward"><button type="button" data-v="completion">Share of the video watched</button><button type="button" data-v="long_view">Long view</button><button type="button" data-v="watch_time">Seconds watched</button></div></div>
+    <div id="c-length"></div>
+    <div class="readout" id="ro-reward"></div>
+  </div>
+  <div class="card">
+    <h3>Seconds watched against long views, as the list gets longer</h3>
+    <p class="sub">Each path follows one reward from 1% to 100% of each user's list. Move the slider to compare the rewards at the same list length.</p>
+    <div class="slider"><span class="lab">Share of each user's list shown</span><input type="range" id="rg-trade" min="0" max="11" step="1" value="3"><output id="out-trade"></output></div>
+    <div id="c-trade"></div>
+    <p class="src">Section <a href="https://github.com/lyz44git/feed-ranking-and-reward-design#3-rewarded-for-the-share-of-a-video-watched-the-ranker-picks-9-second-videos">3</a> of the repository.</p>
+  </div>
+</div></section>
+
+<section class="part" id="cold"><div class="wrap">
+  <div class="kicker">4 · A new video, scored from its caption</div>
+  <h2 class="serif">A language model's opinion of a caption is close to chance.</h2>
+  <p class="lead">For videos no model has seen viewed, a tree model on length, category and upload type ranks a user's candidates; a 7-billion-parameter language model asked about the caption does not.</p>
+  <div class="card">
+    <h3>Within-user AUC on the test videos' random exposures</h3>
+    <div id="c-auc"></div>
+    <p class="note">Bars are 95% intervals from 500 resamples of test videos. The dashed line is chance (0.5). The reference uses the video's own long-view rate among its other viewers, which only exists after the video has been shown.</p>
+  </div>
+  <div class="card">
+    <h3>Observed long-view rate of new videos, by how each method scores them</h3>
+    <p class="sub">Each dot is a test video, placed by its score percentile and its observed long-view rate; larger dots had more exposures. Switch the method and the videos re-sort.</p>
+    <div class="ctrl"><div class="seg" id="seg-cold"><button type="button" data-v="metadata">Metadata model</button><button type="button" data-v="judge">Language-model judge</button></div></div>
+    <div class="row2 v"><div id="c-scatter"></div><div><div id="c-decile"></div><div class="legend" id="lg-decile"></div></div></div>
+    <p class="note">Right: weighted long-view rate of the test videos in each tenth of each method's score. A useful score rises from left to right.</p>
+    <p class="src">Section <a href="https://github.com/lyz44git/feed-ranking-and-reward-design#4-for-a-new-video-a-language-models-judgment-of-its-caption-is-close-to-chance">4</a> of the repository.</p>
+  </div>
+</div></section>
+
+<footer><div class="wrap">
+  <p>All numbers on this page are read from the result files of the repository (<code>out/final/</code>) by <code>docs/build_data.py</code>; the curves, calibration, lengths and video-level scores come from <code>steps/s5_explorer_data.py</code>. Pre-specified rules, methods and limits are in the README. Data: KuaiRand-Pure and its video captions (Gao et al. 2022), released under CC BY 4.0.</p>
+  <p><a href="https://github.com/lyz44git/feed-ranking-and-reward-design">The repository on GitHub</a></p>
+</div></footer>
+<div id="tip" role="tooltip"></div>
+<script src="data.js?v=20261125a"></script>
+<script src="assets/explorer.js?v=20261125a"></script>
+</body>
+</html>

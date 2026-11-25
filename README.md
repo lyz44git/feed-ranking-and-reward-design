@@ -6,6 +6,9 @@
 instead of the standard feed raised the long-view rate of its top picks from 12.2% to 19.3%. Changing the model moved
 it by about one point.**
 
+**[Explore the interactive version →](https://lyz44git.github.io/feed-ranking-and-reward-design/)** Change how much of each user's ranked list is shown, which
+offline score picks the model, and what the ranker is rewarded for, and the charts follow.
+
 When a short-video feed ranks candidate videos for a user, which choices decide whether the ranking serves the user?
 
 In the data studied here, the logs the ranker learns from and the outcome it is rewarded for matter more than the
@@ -32,7 +35,7 @@ the effect of a deployed feed, in which exposures interact, or effects on later 
 release does not allow to be followed. What generalizes is the method: checking a ranker's offline metrics against
 exposures the recommender did not choose.
 
-<img src="figures/figure1_final.png" alt="Four panels: within-user ranking accuracy by model; long-view rate of the top-ranked videos by training logs; watch time by reward; ranking accuracy for new videos scored from metadata, caption models and a language model's judgment." width="100%">
+<a href="https://lyz44git.github.io/feed-ranking-and-reward-design/"><img src="figures/figure1_final.png" alt="Four panels: within-user ranking accuracy by model; long-view rate of the top-ranked videos by training logs; watch time by reward; ranking accuracy for new videos scored from metadata, caption models and a language model's judgment." width="100%"></a>
 
 **Figure 1. What changes the outcomes of a feed ranker's top picks.** *Notes:* Panels A to C are computed on the
 main-feed random exposures of the 8,644 test users who have any, with 95% intervals from 500 bootstrap draws of users.
@@ -89,6 +92,10 @@ the two on its usual offline metric would ship the worse ranker.
 
 <sub><b>Methods.</b> The network of section 1, trained once on 470,538 random and once on 419,032 standard-feed exposures of the same train users. Policy value: for each test user, the top 10% of the user's random exposures by score (at least one), and the mean outcome over them. Standard-feed exposures are long-viewed four times as often as random ones (33.7% and 31.3% against 8.5%), which is the selection the feed makes.</sub>
 
+<a href="https://lyz44git.github.io/feed-ranking-and-reward-design/#logs"><img src="figures/figure2_final.png" alt="Two panels: long-view rate of the videos shown against the share of each user's ranked list shown, for several models and for the network trained on the standard feed; predicted against observed long-view rate by tenth of prediction for the two training logs." width="100%"></a>
+
+**Figure 2. The training logs, at every list length.** *Notes:* A, long-view rate of the videos each user would be shown when the ranker shows the top 1% to 100% of the user's random exposures; the shaded gap is the difference the training logs make, the lines inside it the difference the model makes. B, mean predicted against observed long-view rate in tenths of each ranker's prediction on random exposures; the dashed line is perfect calibration.
+
 ## 3. Rewarded for the share of a video watched, the ranker picks 9-second videos.
 
 Rewarded for seconds watched, the ranker's picks are watched for 12.6 seconds per exposure, 7.8 seconds longer
@@ -103,6 +110,10 @@ from videos of 110 seconds, and fewer long views than the long-view reward (16.9
 are rare (about 6 and 1 per 1,000 exposures) and move little under any reward.
 
 <sub><b>Methods.</b> The network of section 1 trained on random exposures with three labels: the share of the video watched (watch time over length, capped at one), long view, and the log of seconds watched. Each policy shows each user the top 10% of the user's random exposures by its score; "shown at random" shows the same number drawn at random.</sub>
+
+<a href="https://lyz44git.github.io/feed-ranking-and-reward-design/#reward"><img src="figures/figure3_final.png" alt="Two panels: distribution of video length in each user's top 10% under three rewards and at random; seconds watched against long-view rate for each reward as the list grows from 1% to 100%." width="100%"></a>
+
+**Figure 3. What each reward puts at the top of the list.** *Notes:* A, share of the videos in each user's top 10% by length, for the three rewards; the dotted line is videos shown at random. B, seconds watched and long-view rate of the videos shown as the list grows from the top 1% to all of a user's random exposures; large dots mark the top 10%.
 
 ## 4. For a new video, a language model's judgment of its caption is close to chance.
 
@@ -138,6 +149,10 @@ every setting tried.
 </details>
 
 <sub><b>Methods.</b> Videos split 50/10/40 into train (3,016), validation (603) and test (2,413); each video's label is its long-view rate over its main-feed random exposures. Metadata: LightGBM with a cross-entropy loss on the rate, weighted by exposures, on length, category, ad flag, age, music type, aspect ratio, upload type and caption length. Caption models read "length in seconds, then caption", with account mentions removed. The fine-tuned model adds its output to the metadata model's out-of-fold logit, so it learns what the text adds, with a binomial loss on each video's counts. The judge is scored by the log-odds of "yes" against "no", with no training. Intervals from 500 bootstrap draws of test videos.</sub>
+
+<a href="https://lyz44git.github.io/feed-ranking-and-reward-design/#cold"><img src="figures/figure4_final.png" alt="Three panels: observed long-view rate of each test video against its score percentile under the metadata model and under the language-model judge; long-view rate by tenth of four scores." width="100%"></a>
+
+**Figure 4. New videos, sorted by each score.** *Notes:* A and B, each dot is one of the 2,413 test videos, placed by its score percentile and its observed long-view rate (square-root scale), sized by its number of random exposures; the line joins the exposure-weighted rate of each tenth. C, the same rate by tenth for four scores; the dashed line is the overall rate.
 
 ## 5. Published research reports the same pattern.
 
@@ -205,8 +220,9 @@ design/      analysis plans, each hashed before its run on the final data
 pilot/       the exploratory scripts and logs that chose the settings and thresholds
 src/kr/      data preparation, the network, unbiased evaluation, the caption models' data and evaluation
 steps/       one script per stage, in run order; results in out/<sample>/
-out/         results.json (sections 1 to 3) and step4.json (section 4), for the pilot and the final sample
-figures/     Figure 1, drawn from the result files
+out/         results.json (sections 1 to 3), step4.json (section 4) and explorer.json (curves behind Figures 2 to 4)
+figures/     Figures 1 to 4, drawn from the result files
+docs/        interactive figures (GitHub Pages); build_data.py reads every number from the result files
 logs/        run logs and the SHA-256 of the plans
 tests/       unit tests (no data needed)
 ```
@@ -226,7 +242,9 @@ python steps/s123_networks.py <KuaiRand-Pure/data> --sample final
 python steps/s_summary.py <KuaiRand-Pure/data> --sample final
 python steps/s4_extract_captions.py <kuairand_video_captions.csv> <KuaiRand-Pure/data> pool_captions.parquet
 python steps/s4_captions.py <KuaiRand-Pure/data> pool_captions.parquet --sample final
+python steps/s5_explorer_data.py <KuaiRand-Pure/data> pool_captions.parquet --sample final
 python steps/s_figures.py --sample final
+python docs/build_data.py
 ```
 
 `--sample pilot` runs the same steps on the pilot. Tested with Python 3.13 on macOS (Apple M3 Ultra, PyTorch MPS).
@@ -243,7 +261,8 @@ The tests need none of the data. They check that the splits of users and of vide
 shares, and that pilot and final samples do not overlap; that a history reads only the same user's earlier events and
 that no history summary uses the current or a later outcome; that within-user AUC equals the usual AUC for one user,
 ignores shifts in a user's scores, gives ties half credit, and gives the same value with weights as with repeated
-rows; that a policy picks each user's top share; and that captions lose account mentions but keep hashtags. They run
+rows; that a policy picks each user's top share, and the list-length curves behind Figures 2 and 3 pick the same
+videos; and that captions lose account mentions but keep hashtags. They run
 on every push (see the badge above).
 
 ## License
