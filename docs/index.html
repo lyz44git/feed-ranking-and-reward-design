@@ -18,7 +18,7 @@
   <h1 class="serif">What a feed ranker learns from matters more than the model.</h1>
   <p class="dek">A short-video app replaced some recommendations with videos drawn at random and released the logs. Users' responses to those videos show what a ranker would obtain, with no model of how the feed chooses. Change how long a list the ranker shows, which offline score picks the model, and what it is rewarded for, and the charts follow.</p>
   <div class="stats">
-    <div class="stat"><div class="n" data-count="exposures">0</div><div class="l">random exposures of held-out users, the ground truth for every chart</div></div>
+    <div class="stat"><div class="n" data-count="exposures">0</div><div class="l">random exposures of held-out users, the ground truth for sections 1 to 3</div></div>
     <div class="stat"><div class="n" data-count="users">0</div><div class="l">held-out users, none of whom any model was trained on</div></div>
     <div class="stat"><div class="n"><span class="o" data-count="lvStd" data-suffix="%">0</span><span class="vs">→</span><span data-count="lvRand" data-suffix="%">0</span></div><div class="l">long-view rate of each user's top 10%, trained on the standard feed and on random exposures</div></div>
   </div>
@@ -26,8 +26,8 @@
 
 <section class="part" id="logs"><div class="wrap">
   <div class="kicker">1 · Which logs to learn from</div>
-  <h2 class="serif">Trained on random exposures, the ranker's picks are long-viewed far more often, at any list length.</h2>
-  <p class="lead">Each user's random exposures are ranked by a model, and the top of the list is what a feed would show. The gap between training logs dwarfs the gap between models.</p>
+  <h2 class="serif">Trained on random exposures, the ranker's picks are long-viewed far more often.</h2>
+  <p class="lead">Each user's random exposures are re-ranked by a model, and the top 10% (the prespecified cutoff) is pooled over users. It is a retrospective comparison on exposures that happened, not the value of a deployed feed. Among the configurations evaluated here, the gap between training logs dwarfs the gap between models.</p>
   <div class="card">
     <h3>Outcome of the videos each user would be shown, by how much of the list is shown</h3>
     <p class="sub">Move the slider to show more or less of each user's ranked list. At 100% every exposure is shown, which is the same as showing videos at random.</p>
@@ -48,13 +48,13 @@
   <div class="card">
     <h3>Which ranker wins depends on what it is scored on</h3>
     <p class="sub">Choose a score. The badge marks the ranker a team would ship on that score.</p>
-    <div class="ctrl"><div class="seg" id="seg-flip"><button type="button" data-v="auc_standard">AUC on the standard feed</button><button type="button" data-v="within_random">Within-user AUC on random exposures</button><button type="button" data-v="long_view">Long-view rate, top 10%</button><button type="button" data-v="watch_seconds">Seconds watched, top 10%</button></div></div>
+    <div class="ctrl"><div class="seg" id="seg-flip"><button type="button" data-v="auc_standard">AUC on the standard feed</button><button type="button" data-v="auc_random">AUC on random exposures</button><button type="button" data-v="within_random">Within-user AUC on random exposures</button><button type="button" data-v="long_view">Long-view rate, top 10%</button><button type="button" data-v="watch_seconds">Seconds watched, top 10%</button></div></div>
     <div id="c-flip"></div>
     <p class="note">Both rankers are the same network; only the training logs differ. Within-user AUC is the share of pairs of the same user's exposures, one long-viewed and one not, that a score orders correctly.</p>
   </div>
   <div class="card">
     <h3>Predicted against observed long-view rate on random exposures</h3>
-    <p class="sub">Exposures in tenths of each ranker's prediction. Points on the diagonal are calibrated. The standard-feed model expects the long views its own feed produced.</p>
+    <p class="sub">All random test exposures, in tenths of each ranker's prediction. Points on the diagonal are calibrated. The standard-feed model expects the long views its own feed produced.</p>
     <div class="ctrl"><div class="seg" id="seg-calib"><button type="button" data-v="both">Both</button><button type="button" data-v="transformer">Trained on random exposures</button><button type="button" data-v="trained_on_standard_feed">Trained on the standard feed</button></div></div>
     <div id="c-calib"></div>
     <div class="readout" id="ro-calib"></div>
@@ -64,11 +64,11 @@
 
 <section class="part" id="reward"><div class="wrap">
   <div class="kicker">3 · What it is rewarded for</div>
-  <h2 class="serif">Rewarded for the share of a video watched, the ranker picks 9-second videos.</h2>
-  <p class="lead">The same network trained on three labels. A reward that can be met by picking short videos is met that way.</p>
+  <h2 class="serif">Rewarded for the share of a video watched, the ranker games video length.</h2>
+  <p class="lead">The same network trained on three labels. The share watched is play time over recorded length, capped at one, so short videos and videos whose length is recorded as zero score high; the reward picks both. Without the zero-length videos it still loses watch time against random picks.</p>
   <div class="card">
     <h3>Length of the videos each reward puts in a user's top 10%</h3>
-    <p class="sub">Choose a reward. The outline shows the lengths of videos shown at random.</p>
+    <p class="sub">Choose a reward. The outline shows the lengths of videos shown at random; "none" is a length recorded as zero.</p>
     <div class="ctrl"><div class="seg" id="seg-reward"><button type="button" data-v="completion">Share of the video watched</button><button type="button" data-v="long_view">Long view</button><button type="button" data-v="watch_time">Seconds watched</button></div></div>
     <div id="c-length"></div>
     <div class="readout" id="ro-reward"></div>
@@ -87,14 +87,14 @@
   <h2 class="serif">A language model's opinion of a caption is close to chance.</h2>
   <p class="lead">For videos no model has seen viewed, a tree model on length, category and upload type ranks a user's candidates; a 7-billion-parameter language model asked about the caption does not.</p>
   <div class="card">
-    <h3>Within-user AUC on the test videos' random exposures</h3>
+    <h3>Within-user AUC on the random exposures of 2,413 held-out videos</h3>
     <div id="c-auc"></div>
     <p class="note">Bars are 95% intervals from 500 resamples of test videos. The dashed line is chance (0.5). The reference uses the video's own long-view rate among its other viewers, which only exists after the video has been shown.</p>
   </div>
   <div class="card">
     <h3>Observed long-view rate of new videos, by how each method scores them</h3>
     <p class="sub">Each dot is a test video, placed by its score percentile and its observed long-view rate; larger dots had more exposures. Switch the method and the videos re-sort.</p>
-    <div class="ctrl"><div class="seg" id="seg-cold"><button type="button" data-v="metadata">Metadata model</button><button type="button" data-v="judge">Language-model judge</button></div></div>
+    <div class="ctrl"><div class="seg" id="seg-cold"><button type="button" data-v="metadata">Metadata model</button><button type="button" data-v="judge">Language-model judge (yes or no)</button></div></div>
     <div class="row2 v"><div id="c-scatter"></div><div><div id="c-decile"></div><div class="legend" id="lg-decile"></div></div></div>
     <p class="note">Right: weighted long-view rate of the test videos in each tenth of each method's score. A useful score rises from left to right.</p>
     <p class="src">Section <a href="https://github.com/lyz44git/feed-ranking-and-reward-design#4-for-a-new-video-a-language-models-judgment-of-its-caption-is-close-to-chance">4</a> of the repository.</p>

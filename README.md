@@ -15,18 +15,20 @@ In the data studied here, the logs the ranker learns from and the outcome it is 
 model. Kuaishou replaced a share of the recommendations in its app with videos drawn at random from a pool of 7,583
 and released the logs (KuaiRand; [Gao et al. 2022](https://doi.org/10.1145/3511808.3557624)). The recommender did not
 choose these exposures, so users' responses to them show what a ranker would obtain by showing each user its
-top-ranked candidates, with no model of how the feed chooses. (A long view is a play of at least 18 seconds, or of the
-whole video if it is shorter.)
+top-ranked candidates, with no model of how the feed chooses. The comparison is retrospective: each user's random
+exposures are re-ranked, and the outcomes of the top 10% are pooled over users; it is not the value of a deployed
+feed. (A long view is a play of at least 18 seconds, or of the whole video if it is shorter.)
 
 Measured this way, the usual offline check points the wrong way. The same network trained on the standard feed scores
 better on held-out standard-feed exposures (AUC 0.71 against 0.65), yet the videos it ranks highest are long-viewed
-12.2% of the time against 19.3%, and it predicts 3.7 times the actual rate. A reward for the share of a video watched
-selects 9-second videos and lowers watch time below that of videos shown at random.
+12.2% of the time against 19.3%, and over all random test exposures it predicts 3.7 times the actual rate. A reward for
+the share of a video watched selects short videos and videos whose length is recorded as zero, and lowers watch time
+below that of videos shown at random.
 
 This repository examines four choices in turn: the model that predicts a user's response, the logs it learns from,
 the outcome it is rewarded for, and how a new video with no viewing record can be scored from its caption. All data
-are public. Each of the four pass-or-fail rules was set on a pilot sample that is not part of the reported results,
-then fixed and hashed before the result was seen; all four were met. Results that did not favor the more complex
+are public. Four pass-or-fail rules were set on pilot samples that are not part of the reported results and fixed in
+two hashed plans before their respective final runs; all four were met. Results that did not favor the more complex
 method are reported alongside the rest.
 
 **Scope.** The results are offline estimates for one app over one month in 2022. They show how a ranker's choices
@@ -48,14 +50,14 @@ and orange a number that misleads.
 
 ## 1. Which model is used changes the outcome by about one point.
 
-Among models trained on random exposures, a Transformer over the user's last 50 events orders a user's candidates
-better than gradient-boosted trees given summaries of the same history: a within-user AUC of 0.689 against 0.684, a
+Among models trained on random exposures, a Transformer over up to the user's last 50 events orders a user's
+candidates better than gradient-boosted trees given summaries of all the user's earlier events: a within-user AUC of 0.689 against 0.684, a
 difference of 0.0049 (0.0027 to 0.0071). Within-user AUC is the share of pairs of the same user's exposures, one
 long-viewed and one not, that a score orders correctly; it ignores which users watch more, which a ranker cannot
 change.
 
-The gain does not come from reading the history in order. The same network without the Transformer does slightly
-better (0.690; difference −0.0013, −0.0024 to −0.0002). Histories in this release contain only the pool's videos, so a
+The gain does not come from reading the history in order. The same network without the sequence branch (the
+Transformer over individual events; the history summaries are kept) does slightly better (0.690; difference −0.0013, −0.0024 to −0.0002). Histories in this release contain only the pool's videos, so a
 user's recent viewing outside the pool is missing. What helps is the training loss. Without a pairwise loss over pairs
 of the same user, the Transformer has the highest overall AUC of any model (0.781) and a lower within-user AUC
 (−0.0079, −0.0097 to −0.0063): it learns which users watch a lot, which is most of what overall AUC rewards and none of
@@ -63,6 +65,11 @@ what a ranker can use.
 
 The resulting policies differ little. The long-view rate of each model's top 10% ranges from 18.2% to 19.5%, against
 8.5% for videos shown at random.
+
+Events are ordered by user, time and video id, so 1,731 test targets (0.5%) have in their history an event of the same
+user logged in the same millisecond. Without them the three comparisons are unchanged: +0.0051 (0.0029 to 0.0073)
+against the trees, −0.0013 (−0.0023 to −0.0002) against the network without the sequence branch, and +0.0080 (0.0064 to
+0.0098) for the within-user loss ([`out/final/sensitivity.json`](out/final/sensitivity.json)).
 
 <details><summary>All models</summary>
 
@@ -86,26 +93,37 @@ network trained on the train users' standard-feed exposures, the logs a team nor
 
 The usual offline check prefers the worse ranker. Scored on held-out standard-feed exposures, the model trained on
 the standard feed wins by 0.06 of AUC (0.713 against 0.655). It has learned which of the feed's own choices users
-watch, not which videos a user would watch among those the feed did not choose; on random exposures its within-user
-AUC is 0.571 against 0.689, and it predicts 3.7 times the long-view rate of a random video. A team that chose between
+watch, not which videos a user would watch among those the feed did not choose. On random exposures the order
+reverses on the same metric (AUC 0.679 against 0.757), its within-user AUC is 0.571 against 0.689, and its mean
+prediction over all random test exposures is 3.7 times the observed rate (31.8% against 8.5%). A team that chose between
 the two on its usual offline metric would ship the worse ranker.
 
-<sub><b>Methods.</b> The network of section 1, trained once on 470,538 random and once on 419,032 standard-feed exposures of the same train users. Policy value: for each test user, the top 10% of the user's random exposures by score (at least one), and the mean outcome over them. Standard-feed exposures are long-viewed four times as often as random ones (33.7% and 31.3% against 8.5%), which is the selection the feed makes.</sub>
+<sub><b>Methods.</b> The network of section 1, trained once on 470,538 random and once on 419,032 standard-feed exposures of the same train users. Policy value: for each test user, the top 10% of the user's random exposures by score (at least one), and the mean outcome over all selected exposures, pooled over users. Standard-feed exposures are long-viewed about four times as often as random ones (33.7% and 31.3% in the two periods of the full release, 37.9% for the final test users' main feed, against 8.5%), which is the selection the feed makes.</sub>
 
 <a href="https://lyz44git.github.io/feed-ranking-and-reward-design/#logs"><img src="figures/figure2_final.png" alt="Two panels: long-view rate of the videos shown against the share of each user's ranked list shown, for several models and for the network trained on the standard feed; predicted against observed long-view rate by tenth of prediction for the two training logs." width="100%"></a>
 
-**Figure 2. The training logs, at every list length.** *Notes:* A, long-view rate of the videos each user would be shown when the ranker shows the top 1% to 100% of the user's random exposures; the shaded gap is the difference the training logs make, the lines inside it the difference the model makes. B, mean predicted against observed long-view rate in tenths of each ranker's prediction on random exposures; the dashed line is perfect calibration.
+**Figure 2. The training logs, at every list length.** *Notes:* A, long-view rate of the videos each user would be shown when the ranker shows the top 1% to 100% of the user's random exposures; the shaded gap is the difference the training logs make for the same Transformer; the thin lines are other models trained on random exposures. B, mean predicted against observed long-view rate in tenths of each ranker's prediction on random exposures; the dashed line is perfect calibration.
 
-## 3. Rewarded for the share of a video watched, the ranker picks 9-second videos.
+<a name="3-rewarded-for-the-share-of-a-video-watched-the-ranker-picks-9-second-videos"></a>
+
+## 3. Rewarded for the share of a video watched, the ranker games video length.
 
 Rewarded for seconds watched, the ranker's picks are watched for 12.6 seconds per exposure, 7.8 seconds longer
 (7.4 to 8.2) than when it is rewarded for the share of the video watched (4.8 seconds).
 
-The share-watched reward is gamed by video length. It raises the share watched from 16%, for videos shown at random,
-to 57% by picking videos of about 9 seconds, which are easy to finish and short to watch: 2.2 seconds less than a
-random video (2.0 to 2.3). The metric it optimizes rises while the time users spend falls.
+The share-watched reward is gamed by video length. The share watched is play time over the recorded length, capped
+at one, so a video whose length is recorded as zero (3.1% of random exposures) counts as fully watched. The reward
+raises the share watched from 16%, for videos shown at random, to 57%; 31% of its picks are such videos, against none
+for the long-view reward and almost none for the watch-time reward, and the mean recorded length of its picks is 9
+seconds. Its picks are watched 2.2 seconds less than a random video (2.0 to 2.3). The metric it optimizes rises while
+the time users spend falls.
 
-Rewards that do not depend on length trade off rather than dominate. The watch-time reward gives the most seconds,
+The finding does not rest on the zero-length videos. Re-ranking each user's videos that have a recorded length, with
+the same scores, the share-watched reward's picks are 13.5 seconds long on average and are watched for 36% of their
+length against 13% at random, and still 1.6 seconds less than the same number of those videos drawn at random (−1.58,
+−1.70 to −1.45) ([`out/final/sensitivity.json`](out/final/sensitivity.json)).
+
+The watch-time and long-view rewards trade off rather than dominate. The watch-time reward gives the most seconds,
 from videos of 110 seconds, and fewer long views than the long-view reward (16.9% against 19.3%). Likes and dislikes
 are rare (about 6 and 1 per 1,000 exposures) and move little under any reward.
 
@@ -113,21 +131,21 @@ are rare (about 6 and 1 per 1,000 exposures) and move little under any reward.
 
 <a href="https://lyz44git.github.io/feed-ranking-and-reward-design/#reward"><img src="figures/figure3_final.png" alt="Two panels: distribution of video length in each user's top 10% under three rewards and at random; seconds watched against long-view rate for each reward as the list grows from 1% to 100%." width="100%"></a>
 
-**Figure 3. What each reward puts at the top of the list.** *Notes:* A, share of the videos in each user's top 10% by length, for the three rewards; the dotted line is videos shown at random. B, seconds watched and long-view rate of the videos shown as the list grows from the top 1% to all of a user's random exposures; large dots mark the top 10%.
+**Figure 3. What each reward puts at the top of the list.** *Notes:* A, share of the videos in each user's top 10% by recorded length, for the three rewards ("none": recorded as zero; no video has a recorded length between 0 and 5 seconds); the dotted line is videos shown at random. B, seconds watched and long-view rate of the videos shown as the list grows from the top 1% to all of a user's random exposures; large dots mark the top 10%.
 
 ## 4. For a new video, a language model's judgment of its caption is close to chance.
 
 A new video has no viewing record. A platform knows its length, category, upload type and caption. Scored on the
 377,132 random exposures of 2,413 test videos to 26,857 users, a tree model on that metadata orders a user's new
 candidates with a within-user AUC of 0.622 (0.614 to 0.631). Qwen2.5-7B-Instruct, asked whether a typical user would
-watch the video for 18 seconds given its length and caption, reaches 0.504 (0.493 to 0.514), close to chance and 0.118
+watch the video for 18 seconds given its length and caption (yes or no), reaches 0.504 (0.493 to 0.514), close to chance and 0.118
 below the metadata model (0.103 to 0.133). It answers yes for 42% of videos, and its answers have a correlation of
 0.03 with the videos' long-view rates; asking it for a rating from 0 to 9 instead gives 0.523. A language model's
 opinion of a caption is not a measure of what users watch, and random exposures show this before such an opinion is
 used as a label or a reward.
 
-The caption itself carries a little information. Adding 32 components of a small language model's embedding of it to
-the metadata raises the within-user AUC by 0.0065 (0.0013 to 0.0124), about a tenth of the gap between metadata and a
+The caption itself carries a little information. Adding 32 components of a small language model's embedding of the length and
+caption to the metadata raises the within-user AUC by 0.0065 (0.0013 to 0.0124), about a tenth of the gap between metadata and a
 video's long-view rate among its other viewers (0.695), which is available only once the video has been shown.
 
 Fine-tuning that model did not help with 3,000 training videos. With its last four blocks fine-tuned on each video's
@@ -140,7 +158,7 @@ every setting tried.
 | Score of a new video | Within-user AUC (95% CI) | Correlation with the video's long-view rate |
 |---|---|---|
 | Metadata (LightGBM) | 0.622 (0.614 to 0.631) | 0.49 |
-| Metadata + caption embedding (Qwen2.5-0.5B, 32 components) | 0.628 (0.620 to 0.638) | 0.53 |
+| Metadata + length-and-caption embedding (Qwen2.5-0.5B, 32 components) | 0.628 (0.620 to 0.638) | 0.53 |
 | Metadata + fine-tuned Qwen2.5-0.5B | 0.622 (0.614 to 0.631) | 0.49 |
 | Qwen2.5-7B-Instruct, yes or no | 0.504 (0.493 to 0.514) | 0.03 |
 | Qwen2.5-7B-Instruct, rating from 0 to 9 | 0.523 (0.513 to 0.535) | 0.15 |
@@ -220,7 +238,8 @@ design/      analysis plans, each hashed before its run on the final data
 pilot/       the exploratory scripts and logs that chose the settings and thresholds
 src/kr/      data preparation, the network, unbiased evaluation, the caption models' data and evaluation
 steps/       one script per stage, in run order; results in out/<sample>/
-out/         results.json (sections 1 to 3), step4.json (section 4) and explorer.json (curves behind Figures 2 to 4)
+out/         results.json (sections 1 to 3), step4.json (section 4), explorer.json (curves behind Figures 2 to 4) and
+             sensitivity.json (zero-length videos, same-millisecond events)
 figures/     Figures 1 to 4, drawn from the result files
 docs/        interactive figures (GitHub Pages); build_data.py reads every number from the result files
 logs/        run logs and the SHA-256 of the plans
@@ -243,6 +262,7 @@ python steps/s_summary.py <KuaiRand-Pure/data> --sample final
 python steps/s4_extract_captions.py <kuairand_video_captions.csv> <KuaiRand-Pure/data> pool_captions.parquet
 python steps/s4_captions.py <KuaiRand-Pure/data> pool_captions.parquet --sample final
 python steps/s5_explorer_data.py <KuaiRand-Pure/data> pool_captions.parquet --sample final
+python steps/s6_sensitivity.py <KuaiRand-Pure/data> --sample final
 python steps/s_figures.py --sample final
 python docs/build_data.py
 ```
@@ -262,7 +282,8 @@ shares, and that pilot and final samples do not overlap; that a history reads on
 that no history summary uses the current or a later outcome; that within-user AUC equals the usual AUC for one user,
 ignores shifts in a user's scores, gives ties half credit, and gives the same value with weights as with repeated
 rows; that a policy picks each user's top share, and the list-length curves behind Figures 2 and 3 pick the same
-videos; and that captions lose account mentions but keep hashtags. They run
+videos; that a video with a recorded length of zero counts as fully watched, and that events of the same user logged in
+the same millisecond are flagged; and that captions lose account mentions but keep hashtags. They run
 on every push (see the badge above).
 
 ## License

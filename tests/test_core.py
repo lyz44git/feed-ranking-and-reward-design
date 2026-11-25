@@ -104,3 +104,16 @@ def test_explorer_top_mask_matches_policy_value():
         m = s5.top_mask(user, score, share)
         (val, _) = ke.policy_value(user, score, {"y": y}, share)
         assert np.isclose(y[m].mean(), val["y"])
+
+
+def test_zero_recorded_length_counts_as_fully_watched():
+    share = kd.watch_share(np.array([3.0, 3.0, 0.05, 20.0]), np.array([0.0, 10.0, 0.0, 10.0]))
+    assert np.allclose(share, [1.0, 0.3, 0.5, 1.0])
+
+
+def test_same_millisecond_events_are_flagged():
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("s6", Path(__file__).resolve().parents[1] / "steps" / "s6_sensitivity.py")
+    s6 = importlib.util.module_from_spec(spec); spec.loader.exec_module(s6)
+    user = np.array([1, 1, 1, 2, 2]); time = np.array([10, 10, 11, 11, 12])
+    assert s6.same_ms_as_previous(user, time).tolist() == [False, True, False, False, False]

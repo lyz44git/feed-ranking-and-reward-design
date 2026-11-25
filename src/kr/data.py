@@ -57,6 +57,12 @@ def group_starts(keys):
     return np.repeat(start, np.diff(np.r_[start, n]))
 
 
+def watch_share(play, dur):
+    """Share of the video watched: play time over recorded length, capped at one. A video whose length is recorded as
+    zero counts as fully watched once it is played for 0.1 seconds (see steps/s6_sensitivity.py)."""
+    return np.clip(play / np.maximum(dur, 0.1), 0, 1)
+
+
 def prepare(data_dir, sample):
     ev, uf = load_events(data_dir, sample)
     D = SimpleNamespace(sample=sample, n=len(ev))
@@ -66,7 +72,7 @@ def prepare(data_dir, sample):
     D.dur = ev.duration_ms.to_numpy() / 1000.0
     D.durb = np.digitize(D.dur, [7, 18, 60, 180]) + 1
     D.play = ev.play_time_ms.to_numpy() / 1000.0
-    D.ratio = np.clip(D.play / np.maximum(D.dur, 0.1), 0, 1)
+    D.ratio = watch_share(D.play, D.dur)
     for k in ("is_click", "long_view", "is_like", "is_follow", "is_hate", "is_rand", "tab", "ad", "age"):
         setattr(D, k, ev[k].to_numpy())
     D.hour = (D.time // 3_600_000 % 24).astype(np.float32)

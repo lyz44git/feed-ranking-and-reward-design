@@ -157,15 +157,15 @@ def more_figures(sample, R, S4):
 
     # Figure 3: what each reward picks
     fig, (a1, a2) = plt.subplots(1, 2, figsize=(10.4, 3.9), gridspec_kw={"width_ratios": [1.2, 1], "wspace": 0.25})
-    E = X["length_edges"]; labs = [f"{e:g}–{E[j + 1]:g}" if j + 1 < len(E) else f"{e:g}+" for j, e in enumerate(E)]
+    E = X["length_edges"]; labs = ["none" if j == 0 else f"{e:g}–{E[j + 1]:g}" if j + 1 < len(E) else f"{e:g}+" for j, e in enumerate(E)]
     xs = range(len(E)); w = 0.27
     for o, (k, lab, col) in zip((-w, 0, w), [("reward_completion", "Share watched", ORANGE), ("transformer", "Long view", NAVY), ("reward_watch_time", "Seconds watched", BLUE)]):
         a1.bar([x + o for x in xs], X["length_of_picks"][k], width=w, color=col, label=f"Reward: {lab.lower()}", zorder=3)
     a1.step([x - 0.5 for x in xs] + [len(E) - 0.5], X["length_of_picks"]["shown_at_random"] + [X["length_of_picks"]["shown_at_random"][-1]],
             where="post", color=INK, lw=1, ls=":", label="Shown at random", zorder=4)
     a1.set_xticks(list(xs)); a1.set_xticklabels(labs, rotation=45, ha="right", fontsize=7)
-    pct_axis(a1); a1.set_xlabel("Length of the videos in each user's top 10% (seconds)", color=MUTED)
-    a1.legend(frameon=False, fontsize=7.5); style(a1, "A   A share-watched reward fills the list with videos under 15 seconds")
+    pct_axis(a1); a1.set_xlabel("Recorded length of the videos in each user's top 10% (seconds; none = recorded as zero)", color=MUTED)
+    a1.legend(frameon=False, fontsize=7.5); style(a1, "A   A share-watched reward picks short and zero-length videos")
     for k, lab, col in [("reward_completion", "Share watched", ORANGE), ("transformer", "Long view", NAVY), ("reward_watch_time", "Seconds watched", BLUE)]:
         a2.plot(C[k]["watch_seconds"], C[k]["long_view"], color=col, lw=1.6, marker="o", ms=3, alpha=0.9)
         a2.scatter([C[k]["watch_seconds"][i]], [C[k]["long_view"][i]], s=70, color=col, edgecolor="white", lw=1.2, zorder=4)

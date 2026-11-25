@@ -1,0 +1,213 @@
+{
+ "sample": "final",
+ "zero_length": {
+  "test_random_exposures": 369177,
+  "with_zero_length": 11571,
+  "share": 0.0313,
+  "top10pct": {
+   "completion": {
+    "picks": 36826,
+    "with_zero_length": 11340,
+    "share": 0.3079,
+    "zero_length_and_fully_watched": 11319
+   },
+   "long_view": {
+    "picks": 36826,
+    "with_zero_length": 0,
+    "share": 0.0,
+    "zero_length_and_fully_watched": 0
+   },
+   "watch_time": {
+    "picks": 36826,
+    "with_zero_length": 2,
+    "share": 0.0001,
+    "zero_length_and_fully_watched": 2
+   }
+  },
+  "recorded_length_only_top10pct": {
+   "completion": {
+    "long_view": {
+     "estimate": 0.13778401122019635,
+     "ci95": [
+      0.1328494151005559,
+      0.14307541860314682
+     ]
+    },
+    "watch_seconds": {
+     "estimate": 5.531033685020032,
+     "ci95": [
+      5.373333552062617,
+      5.711631737152454
+     ]
+    },
+    "completion": {
+     "estimate": 0.36283389703710245,
+     "ci95": [
+      0.3570647187901407,
+      0.3687787218934539
+     ]
+    },
+    "duration": {
+     "estimate": 13.501758528544892,
+     "ci95": [
+      13.389525286834838,
+      13.606789505675462
+     ]
+    }
+   },
+   "shown_at_random": {
+    "long_view": {
+     "estimate": 0.08738357570027569,
+     "ci95": [
+      0.0845191779142742,
+      0.09065760285938235
+     ]
+    },
+    "watch_seconds": {
+     "estimate": 7.115149711000133,
+     "ci95": [
+      6.923424291737818,
+      7.308627767100177
+     ]
+    },
+    "completion": {
+     "estimate": 0.12837401338735382,
+     "ci95": [
+      0.12597901521434307,
+      0.13084748111538816
+     ]
+    },
+    "duration": {
+     "estimate": 107.59168030017891,
+     "ci95": [
+      107.2308489062081,
+      107.92858868382905
+     ]
+    }
+   },
+   "completion_minus_random__watch_seconds": {
+    "estimate": -1.5841160259801015,
+    "ci95": [
+     -1.7046489224738264,
+     -1.4522613900919885
+    ]
+   },
+   "picks": 35650,
+   "long_view": {
+    "long_view": {
+     "estimate": 0.19402524544179522,
+     "ci95": [
+      0.1869436533401457,
+      0.20100341362213428
+     ]
+    },
+    "watch_seconds": {
+     "estimate": 12.066713486291798,
+     "ci95": [
+      11.673539615822845,
+      12.481340443307825
+     ]
+    },
+    "completion": {
+     "estimate": 0.22741548769450146,
+     "ci95": [
+      0.22208418346504158,
+      0.2328033515000994
+     ]
+    },
+    "duration": {
+     "estimate": 85.8230927885331,
+     "ci95": [
+      84.95271467860644,
+      86.61238166911606
+     ]
+    }
+   },
+   "watch_time": {
+    "long_view": {
+     "estimate": 0.1697054698457223,
+     "ci95": [
+      0.16312637841288308,
+      0.1765017146343664
+     ]
+    },
+    "watch_seconds": {
+     "estimate": 12.683017849024349,
+     "ci95": [
+      12.24813348274265,
+      13.142855687968831
+     ]
+    },
+    "completion": {
+     "estimate": 0.1674852949434782,
+     "ci95": [
+      0.1629154060974907,
+      0.17232247063982783
+     ]
+    },
+    "duration": {
+     "estimate": 110.67394284513188,
+     "ci95": [
+      109.78108695081401,
+      111.6101551733524
+     ]
+    }
+   }
+  }
+ },
+ "same_millisecond": {
+  "test_targets_with_same_ms_previous_event": 1731,
+  "share": 0.0047,
+  "within_user_auc_without_them": {
+   "lgb_history_summaries": {
+    "estimate": 0.6838996763244861,
+    "ci95": [
+     0.6759264529520973,
+     0.6918711229803725
+    ]
+   },
+   "network_no_sequence": {
+    "estimate": 0.6902633647526617,
+    "ci95": [
+     0.6810168008151047,
+     0.6991703530628512
+    ]
+   },
+   "transformer_no_ranking_loss": {
+    "estimate": 0.6809993096013247,
+    "ci95": [
+     0.6727849720264233,
+     0.6893020943813788
+    ]
+   },
+   "transformer": {
+    "estimate": 0.6889901865209256,
+    "ci95": [
+     0.6796766372305012,
+     0.6979825960727394
+    ]
+   }
+  },
+  "transformer_minus_lgb_history_summaries": {
+   "estimate": 0.005090510196439468,
+   "ci95": [
+    0.002923547283742328,
+    0.007326857210022909
+   ]
+  },
+  "transformer_minus_network_no_sequence": {
+   "estimate": -0.0012731782317361162,
+   "ci95": [
+    -0.002336202389939124,
+    -0.00023566133065811072
+   ]
+  },
+  "transformer_minus_transformer_no_ranking_loss": {
+   "estimate": 0.007990876919600876,
+   "ci95": [
+    0.0064026398598647115,
+    0.009844198131551659
+   ]
+  }
+ }
+}

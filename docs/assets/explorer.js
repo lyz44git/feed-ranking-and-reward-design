@@ -130,6 +130,7 @@ const SH = D.shares, shareLab = s => (s * 100 >= 1 ? fmt(100 * s, 0) : fmt(100 *
   const host = $("#c-flip"), O = D.step2.offline;
   const M = {
     auc_standard: { lab: "AUC on held-out standard-feed exposures", v: k => O[k].auc_standard, f: v => fmt(v, 3), min: 0.5 },
+    auc_random: { lab: "AUC on held-out random exposures (same metric, other data)", v: k => O[k].auc_random, f: v => fmt(v, 3), min: 0.5 },
     within_random: { lab: "Within-user AUC on random exposures", v: k => O[k].within_random, f: v => fmt(v, 3), min: 0.5 },
     long_view: { lab: "Long-view rate of each user's top 10%", v: k => S2[k].long_view.est, f: v => pct(v), min: 0 },
     watch_seconds: { lab: "Seconds watched per exposure, top 10%", v: k => S2[k].watch_seconds.est, f: v => fmt(v, 1) + " s", min: 0 } };
@@ -189,7 +190,7 @@ const SH = D.shares, shareLab = s => (s * 100 >= 1 ? fmt(100 * s, 0) : fmt(100 *
 (() => {
   const host = $("#c-length"), ro = $("#ro-reward"), E = D.length_edges;
   const key = { completion: "reward_completion", long_view: "transformer", watch_time: "reward_watch_time" };
-  const lab = E.map((e, i) => i === E.length - 1 ? `${e}+` : `${e}–${E[i + 1]}`);
+  const lab = E.map((e, i) => i === 0 ? "none" : i === E.length - 1 ? `${e}+` : `${e}–${E[i + 1]}`);
   let r = "completion"; let bars = [];
   function draw(anim) {
     const w = W(host), h = 280, L = 48, R = w - 10, T = 16, B = h - 48, n = E.length, bw = (R - L) / n;
@@ -204,15 +205,16 @@ const SH = D.shares, shareLab = s => (s * 100 >= 1 ? fmt(100 * s, 0) : fmt(100 *
       bars.push([y(v), B - y(v)]);
       el("rect", { x: x0, y: y(rnd[i]), width: bw - 6, height: B - y(rnd[i]), fill: "none", stroke: css("--ink2"), "stroke-width": 1, "stroke-dasharray": "3 2", rx: 3 }, svg);
       const hot = el("rect", { x: L + i * bw, y: T, width: bw, height: B - T, fill: "transparent" }, svg);
-      hoverTip(hot, `${lab[i]} seconds<br>picks: <b>${pct(v)}</b><br>shown at random: ${pct(rnd[i])}`);
+      hoverTip(hot, `${i === 0 ? "length recorded as zero" : lab[i] + " seconds"}<br>picks: <b>${pct(v)}</b><br>shown at random: ${pct(rnd[i])}`);
       if (w >= 640 || i % 2 === 0) txt(svg, L + i * bw + bw / 2, B + 16, lab[i], { "text-anchor": "middle", "font-size": 10.5 });
     });
-    txt(svg, (L + R) / 2, B + 38, "Video length (seconds)", { "text-anchor": "middle", class: "t-muted", "font-size": 11 });
+    txt(svg, (L + R) / 2, B + 38, "Recorded video length (seconds; none = recorded as zero)", { "text-anchor": "middle", class: "t-muted", "font-size": 11 });
     const v = D.step3[r], base = D.step3.shown_at_random;
     ro.innerHTML = [["Seconds watched per exposure", v.watch_seconds.est, base.watch_seconds.est, x => fmt(x, 1) + " s"],
       ["Long-view rate", v.long_view.est, base.long_view.est, x => pct(x)], ["Share of the video watched", v.completion.est, base.completion.est, x => pct(x, 0)],
       ["Mean length of the picks", v.duration.est, base.duration.est, x => fmt(x, 0) + " s"]]
-      .map(([k, a, b, f]) => `<div><div class="k">${k}</div><div class="v">${f(a)} <small>at random ${f(b)}</small></div></div>`).join("");
+      .map(([k, a, b, f]) => `<div><div class="k">${k}</div><div class="v">${f(a)} <small>at random ${f(b)}</small></div></div>`).join("")
+      + `<div><div class="k">Picks with no recorded length</div><div class="v">${pct(D.sensitivity.zero_top[r], 0)} <small>at random ${pct(D.sensitivity.zero_share, 0)}</small></div></div>`;
   }
   segControl($("#seg-reward"), v => { r = v; draw(true); }, r);
   whenVisible(host, () => draw(true)); draw(false); redrawers.push(() => draw(false));
@@ -251,7 +253,7 @@ const SH = D.shares, shareLab = s => (s * 100 >= 1 ? fmt(100 * s, 0) : fmt(100 *
 /* ---------- 4a: AUC of new-video scores ---------- */
 (() => {
   const host = $("#c-auc"), A = D.step4.auc;
-  const K = [["metadata", "Metadata (trees)", "--navy"], ["metadata_frozen_text", "Metadata + caption embedding", "--blue"],
+  const K = [["metadata", "Metadata (trees)", "--navy"], ["metadata_frozen_text", "Metadata + length-and-caption embedding", "--blue"],
              ["metadata_finetuned_text", "Metadata + fine-tuned model", "--blue"], ["zero_shot_judge", "Language-model judge, yes or no", "--orange"],
              ["zero_shot_judge_rating", "Language-model judge, rating", "--orange"], ["reference_rate_from_other_viewers", "Reference: rate among other viewers", "--grey"]];
   function draw(anim) {
