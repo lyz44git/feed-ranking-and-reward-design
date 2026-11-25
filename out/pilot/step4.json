@@ -37,6 +37,20 @@
     0.46965461371210293,
     0.5193405464678617
    ]
+  },
+  "zero_shot_judge_rating": {
+   "estimate": 0.5167997086229399,
+   "ci95": [
+    0.4905530888562417,
+    0.5405851961111833
+   ]
+  },
+  "reference_rate_from_other_viewers": {
+   "estimate": 0.694661122408717,
+   "ci95": [
+    0.6786002168650005,
+    0.7122024356239663
+   ]
   }
  },
  "difference": {
@@ -61,11 +75,25 @@
     0.013787797907388199
    ]
   },
-  "judge_minus_metadata": {
-   "estimate": -0.11645976871945851,
+  "metadata_minus_judge": {
+   "estimate": 0.11645976871945851,
    "ci95": [
-    -0.1525890388892262,
-    -0.08221087284680376
+    0.08221087284680376,
+    0.1525890388892262
+   ]
+  },
+  "metadata_minus_judge_rating": {
+   "estimate": 0.09456096154429838,
+   "ci95": [
+    0.06007239142881132,
+    0.1291553482662231
+   ]
+  },
+  "reference_minus_metadata": {
+   "estimate": 0.08330045224147875,
+   "ci95": [
+    0.06366092193159732,
+    0.10339755049705954
    ]
   }
  },
@@ -85,6 +113,10 @@
   "zero_shot_judge": {
    "weighted_pearson_with_observed_rate": 0.010702735323269864,
    "spearman": 0.047245621462833835
+  },
+  "zero_shot_judge_rating": {
+   "weighted_pearson_with_observed_rate": 0.1293129136852261,
+   "spearman": 0.11278060077572644
   }
  },
  "finetune_best_val_loss": [
@@ -92,5 +124,5 @@
   0.2700981920615759,
   0.2700981920615759
  ],
- "rule4_met": false
+ "rule4_met": true
 }

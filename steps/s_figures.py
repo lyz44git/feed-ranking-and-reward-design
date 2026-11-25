@@ -43,7 +43,8 @@ def rows(ax, items, xlabel, fmt, xlim=None):
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument("--sample", default="final"); a = ap.parse_args()
     R = json.loads((ROOT / "out" / a.sample / "results.json").read_text())
-    fig, axes = plt.subplots(3, 1, figsize=(7.2, 8.2), gridspec_kw={"height_ratios": [5, 3, 4], "hspace": 0.75})
+    S4 = json.loads((ROOT / "out" / a.sample / "step4.json").read_text())
+    fig, axes = plt.subplots(4, 1, figsize=(7.2, 11.4), gridspec_kw={"height_ratios": [5, 3, 4, 6], "hspace": 0.75})
 
     # A: step 1
     M = R["step1"]["models"]; best = max(M, key=lambda k: M[k]["auc"])
@@ -86,6 +87,20 @@ def main():
              ("Shown at random", Q["shown_at_random"]["watch_seconds"], GREY, note("shown_at_random"), None)]
     rows(axes[2], items, "Seconds watched per exposure, top 10% of each user's random exposures", lambda v: f"{v:.1f} s")
     axes[2].set_title("C   A completion reward picks very short videos and loses watch time",
+                      loc="left", fontweight="bold", color=INK, pad=10)
+    # D: step 4
+    A, V = S4["within_user_auc"], S4["video_level"]
+    corr = lambda k: f"correlation with the video's rate {V[k]['weighted_pearson_with_observed_rate']:.2f}"
+    items = [("Metadata (rule 4)", A["metadata"], NAVY, corr("metadata"), None),
+             ("Metadata + text embedding", A["metadata_frozen_text"], BLUE, corr("metadata_frozen_text"), None),
+             ("Metadata + fine-tuned language model", A["metadata_finetuned_text"], BLUE,
+              "no fine-tuned epoch beat the metadata model on validation", None),
+             ("Language model judge, yes or no", A["zero_shot_judge"], ORANGE, corr("zero_shot_judge"), ORANGE),
+             ("Language model judge, rating 0 to 9", A["zero_shot_judge_rating"], ORANGE, corr("zero_shot_judge_rating"), ORANGE),
+             ("Reference: rate among other viewers", A["reference_rate_from_other_viewers"], GREY, "not cold start", None)]
+    rows(axes[3], items, "Within-user AUC on random exposures of new videos (pairs of the same user)", lambda v: f"{v:.3f}")
+    axes[3].axvline(0.5, color="#c9ced4", lw=0.8, ls="--", zorder=1)
+    axes[3].set_title("D   For a new video, a language model's judgment of its caption is close to chance",
                       loc="left", fontweight="bold", color=INK, pad=10)
     for ax in axes:
         lo, hi = ax.get_xlim(); ax.set_xlim(lo, hi + (hi - lo) * 0.55)

@@ -1,4 +1,4 @@
-# Feed ranking: what to learn from, how to score it, what to reward
+# Feed ranking: what to learn from, how to score it, what to reward, and what a caption tells
 
 > **Takeaway.** On 369,177 random exposures of 8,644 held-out users, the logs a ranker learns from and the outcome
 > it is rewarded for changed what it shows far more than the model did. The same network trained on the standard
@@ -8,16 +8,20 @@
 > watched for 4.8 seconds, 2.2 seconds less than videos shown at random; rewarding watch time gives 12.6 seconds.
 > Among models trained on random exposures, a Transformer over the user's last 50 events ranks a user's candidates
 > slightly better than gradient-boosted trees (within-user AUC 0.689 against 0.684), but the same network without the
-> sequence does as well (0.690): the gain comes from the training loss, not from reading the history in order. All
-> three pre-specified rules were met.
+> sequence does as well (0.690): the gain comes from the training loss, not from reading the history in order. For a
+> new video with no viewing record, a 7-billion-parameter language model asked whether users will watch it, from its
+> length and caption, orders a user's candidates almost at chance (0.504), while a tree model on the same video's
+> metadata reaches 0.622; an embedding of the caption adds 0.007. All four pre-specified rules were met.
 
-![Within-user ranking by model, the value of the top-ranked videos by training logs, and watch time by reward](figures/figure1_final.png)
+![Within-user ranking by model, the value of the top-ranked videos by training logs, watch time by reward, and scores of new videos from their captions](figures/figure1_final.png)
 
 **Figure 1.** *Notes:* Every number is computed on the main-feed random exposures of the 8,644 test users who have
 any, with 95% intervals from 500 bootstrap draws of users. Panel A shows the share of pairs of the same user's exposures (one long-viewed, one
 not) that each model orders correctly, and each model's AUC over all exposures. Panels B and C show, for each user,
 the exposures in the top 10% of the user's random exposures by a model's score, and the mean outcome over them. Navy
 marks the result the study stands behind, grey a simple baseline, blue other models and orange a number that misleads.
+Panel D is computed on the 2,413 test videos of step 4, which are not in its training data, with intervals from 500
+bootstrap draws of videos; its dashed line is chance.
 
 ## Question
 
@@ -25,7 +29,8 @@ A short-video feed ranks candidate videos for each user. Three choices decide wh
 model that predicts a user's response, the logs it is trained and scored on, and the outcome it is rewarded for.
 Each choice has a version that looks right on the usual offline numbers and is wrong when checked against users'
 behaviour on videos the recommender did not choose. This repository makes that check, using a release in which a
-share of recommendations was replaced by videos drawn at random.
+share of recommendations was replaced by videos drawn at random. A fourth question concerns new videos, which have no
+viewing record: whether their captions, read by a language model, predict what users will watch.
 
 ## Data
 
@@ -33,7 +38,9 @@ share of recommendations was replaced by videos drawn at random.
 to 8 May 2022 on a pool of 7,583 videos, with twelve feedback signals per exposure. From 22 April, recommendations were
 replaced at random by a video drawn uniformly from the pool: 1,186,059 such exposures, about 160 per video. The data
 are not in this repository; download `KuaiRand-Pure.tar.gz` from [Zenodo](https://zenodo.org/records/10439422) and pass
-the path of its `data/` folder.
+the path of its `data/` folder. Step 4 also uses the release's caption file,
+[`kuairand_video_captions.csv`](https://zenodo.org/records/18159199) (CC BY 4.0), of which 98% of pool videos have an
+entry; [`steps/s4_extract_captions.py`](steps/s4_extract_captions.py) keeps the pool's rows.
 
 | Log | Exposures | Users | Long view | Seconds watched |
 |---|---|---|---|---|
@@ -49,7 +56,9 @@ of log is the selection the recommender makes: videos the feed chose are watched
 The analysis plan, [`design/analysis_plan.md`](design/analysis_plan.md), was fixed before any model was run on the
 final users (SHA-256 in [`logs/plan_hash.txt`](logs/plan_hash.txt)). The settings and the three thresholds were
 chosen on the **pilot users** (user ids divisible by five; 5,457 users), whose scripts, log and results are kept in
-[`pilot/`](pilot) and [`out/pilot/results.json`](out/pilot/results.json).
+[`pilot/`](pilot) and [`out/pilot/results.json`](out/pilot/results.json). Step 4 was planned after steps 1 to 3 had
+been run, in [`design/analysis_plan_step4.md`](design/analysis_plan_step4.md), hashed before it was run on the final
+videos; its pilot is the videos with ids divisible by five.
 
 - **Final users.** The other 21,828 users, split by user: train 50% (10,914), validation 10% (2,182), test 40% (8,732, of whom 8,644 have random
   exposures in the main feed).
@@ -133,6 +142,32 @@ view, and the log of seconds watched. Each row is the top 10% of each user's ran
 - **Rewards trade off.** The watch-time reward gives the most seconds and fewer long views than the long-view reward
   (16.9% against 19.3%); neither dominates. Likes and dislikes are rare (about 6 and 1 per 1,000) and move little.
 
+## 4. Can a new video be scored from its caption?
+
+A new video has no viewing record; a platform knows its length, category, upload type and caption. Videos are split
+into train (3,016), validation (603) and test (2,413), and each video's label is its long-view rate over its
+main-feed random exposures. Every model is judged on the 377,132 random exposures of the test videos to 26,857 users.
+
+| Score of a new video | Within-user AUC (95% CI) | Correlation with the video's long-view rate |
+|---|---|---|
+| **Metadata** (LightGBM on length, category, upload type, age, music, aspect ratio) | **0.622 (0.614 to 0.631)** | 0.49 |
+| Metadata + caption embedding (Qwen2.5-0.5B, 32 components) | 0.628 (0.620 to 0.638) | 0.53 |
+| Metadata + fine-tuned Qwen2.5-0.5B | 0.622 (0.614 to 0.631) | 0.49 |
+| Qwen2.5-7B-Instruct, asked "will a typical user watch 18 seconds?" | 0.504 (0.493 to 0.514) | 0.03 |
+| Qwen2.5-7B-Instruct, asked for a rating from 0 to 9 | 0.523 (0.513 to 0.535) | 0.15 |
+| *Reference, not cold start: the video's rate among its other viewers* | *0.695 (0.688 to 0.703)* | |
+
+- **Rule 4 was met.** The metadata model orders a user's new candidates better than the language model's judgment:
+  +0.118 (0.103 to 0.133). The judge says yes to 42% of videos, and its answers barely relate to what users did;
+  asking for a rating instead gives 0.523. A language model's opinion of a caption is not a measure of what users
+  watch, and checking it against random exposures shows this before it is used as a label or a reward.
+- **The caption adds a little.** Its embedding raises the within-user AUC by 0.0065 (0.0013 to 0.0124), about a
+  tenth of the gap between metadata and a video's observed rate among its other viewers (0.074).
+- **Fine-tuning did not help with 3,000 videos.** The 0.5-billion-parameter model, its last four blocks fine-tuned on
+  each video's long views out of its exposures, never had a validation loss below that of the metadata model it
+  starts from, in any of three seeds; the kept model is the metadata model. The same happened on the pilot with every
+  setting tried.
+
 ## What this cannot show
 
 - **A deployed feed.** The policy value is that of choosing among a user's randomly exposed candidates one exposure at a
@@ -142,6 +177,8 @@ view, and the log of seconds watched. Each row is the top 10% of each user's ran
 - **The value of sequences in general.** The Transformer reads histories restricted to the pool. A release with full
   histories could give a different answer.
 - **Other apps and periods.** One app, one month in 2022, 7,583 videos.
+- **Language models in general.** Step 4 uses two prompts, one judge model and the caption text, not the video
+  frames, and about 3,000 videos to fine-tune on; a larger judge, other prompts or more videos could do better.
 
 ## Reproduce
 
@@ -150,15 +187,18 @@ pip install -r requirements.txt
 python steps/s1_baselines.py <KuaiRand-Pure/data> --sample final
 python steps/s123_networks.py <KuaiRand-Pure/data> --sample final
 python steps/s_summary.py <KuaiRand-Pure/data> --sample final
+python steps/s4_extract_captions.py <kuairand_video_captions.csv> <KuaiRand-Pure/data> pool_captions.parquet
+python steps/s4_captions.py <KuaiRand-Pure/data> pool_captions.parquet --sample final
 python steps/s_figures.py --sample final
 pytest -q
 ```
 
 `--sample pilot` runs the same steps on the pilot users. Tested with Python 3.13 on macOS (Apple M3 Ultra, PyTorch MPS);
-the networks take about 30 minutes on the final users.
+the networks take about 30 minutes on the final users, and step 4 (which loads Qwen2.5-0.5B and
+Qwen2.5-7B-Instruct from Hugging Face) about 25 minutes.
 
 ```
-design/        analysis plan, hashed before the run on the final users
+design/        analysis plans, each hashed before its run on the final data
 pilot/         the exploratory scripts and log that chose the settings
 src/kr/        data preparation, the network, unbiased evaluation
 steps/         one script per stage; results in out/<sample>/results.json

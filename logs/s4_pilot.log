@@ -1,0 +1,142 @@
+videos 1505 (train 752, val 151, test 602); exposures 235111; with caption 0.984
+metadata trees 361
+  seed 0 epoch 0 val loss 0.27010
+  seed 0 epoch 1 train 0.30633 val 0.27516 (14s)
+  seed 0 epoch 2 train 0.29977 val 0.27371 (14s)
+  seed 0 epoch 3 train 0.29305 val 0.27097 (14s)
+  seed 1 epoch 0 val loss 0.27010
+  seed 1 epoch 1 train 0.30832 val 0.28576 (14s)
+  seed 1 epoch 2 train 0.29871 val 0.29397 (14s)
+  seed 1 epoch 3 train 0.29354 val 0.27422 (14s)
+  seed 2 epoch 0 val loss 0.27010
+  seed 2 epoch 1 train 0.31000 val 0.28923 (14s)
+  seed 2 epoch 2 train 0.29971 val 0.28254 (14s)
+  seed 2 epoch 3 train 0.29410 val 0.27966 (14s)
+{
+ "sample": "pilot",
+ "videos": {
+  "train": 752,
+  "val": 151,
+  "test": 602
+ },
+ "test_exposures": 93655,
+ "test_users": 22078,
+ "long_view_rate_test": 0.08462975815493033,
+ "caption_share": 0.9840531561461794,
+ "within_user_auc": {
+  "metadata": {
+   "estimate": 0.6113606701672383,
+   "ci95": [
+    0.5880379238241967,
+    0.6353442112802161
+   ]
+  },
+  "metadata_frozen_text": {
+   "estimate": 0.615048411084469,
+   "ci95": [
+    0.5929620304616078,
+    0.6353849937618428
+   ]
+  },
+  "metadata_finetuned_text": {
+   "estimate": 0.6113606701672383,
+   "ci95": [
+    0.5880379238241967,
+    0.6353442112802161
+   ]
+  },
+  "zero_shot_judge": {
+   "estimate": 0.49490090144777976,
+   "ci95": [
+    0.46965461371210293,
+    0.5193405464678617
+   ]
+  },
+  "zero_shot_judge_rating": {
+   "estimate": 0.5167997086229399,
+   "ci95": [
+    0.4905530888562417,
+    0.5405851961111833
+   ]
+  },
+  "reference_rate_from_other_viewers": {
+   "estimate": 0.694661122408717,
+   "ci95": [
+    0.6786002168650005,
+    0.7122024356239663
+   ]
+  }
+ },
+ "difference": {
+  "finetuned_minus_metadata": {
+   "estimate": 0.0,
+   "ci95": [
+    0.0,
+    0.0
+   ]
+  },
+  "frozen_minus_metadata": {
+   "estimate": 0.003687740917230675,
+   "ci95": [
+    -0.013787797907388207,
+    0.02106513839077081
+   ]
+  },
+  "finetuned_minus_frozen": {
+   "estimate": -0.003687740917230675,
+   "ci95": [
+    -0.021065138390770816,
+    0.013787797907388199
+   ]
+  },
+  "metadata_minus_judge": {
+   "estimate": 0.11645976871945851,
+   "ci95": [
+    0.08221087284680376,
+    0.1525890388892262
+   ]
+  },
+  "metadata_minus_judge_rating": {
+   "estimate": 0.09456096154429838,
+   "ci95": [
+    0.06007239142881132,
+    0.1291553482662231
+   ]
+  },
+  "reference_minus_metadata": {
+   "estimate": 0.08330045224147875,
+   "ci95": [
+    0.06366092193159732,
+    0.10339755049705954
+   ]
+  }
+ },
+ "video_level": {
+  "metadata": {
+   "weighted_pearson_with_observed_rate": 0.4483207587807426,
+   "spearman": 0.43954306675467225
+  },
+  "metadata_frozen_text": {
+   "weighted_pearson_with_observed_rate": 0.4769800470969462,
+   "spearman": 0.4941715196168875
+  },
+  "metadata_finetuned_text": {
+   "weighted_pearson_with_observed_rate": 0.44832076090089656,
+   "spearman": 0.43954306675467225
+  },
+  "zero_shot_judge": {
+   "weighted_pearson_with_observed_rate": 0.010702735323269864,
+   "spearman": 0.047245621462833835
+  },
+  "zero_shot_judge_rating": {
+   "weighted_pearson_with_observed_rate": 0.1293129136852261,
+   "spearman": 0.11278060077572644
+  }
+ },
+ "finetune_best_val_loss": [
+  0.2700981920615759,
+  0.2700981920615759,
+  0.2700981920615759
+ ],
+ "rule4_met": true
+}
